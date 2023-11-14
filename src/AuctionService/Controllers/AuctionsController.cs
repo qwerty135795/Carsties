@@ -47,9 +47,11 @@ public class AuctionsController : ControllerBase
         return _mapper.Map<AuctionDto>(auction);
     }
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult> CreateItem(CreateAuctionDto auctionDto)
     {
         var auction = _mapper.Map<Auction>(auctionDto);
+        auction.Seller = User.Identity.Name;
         _context.Auctions.Add(auction);
         var newAuction = _mapper.Map<AuctionDto>(auction);
         await _publishEndpoint.Publish(_mapper.Map<AuctionCreated>(newAuction));
@@ -60,10 +62,12 @@ public class AuctionsController : ControllerBase
         return BadRequest();
     }
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<ActionResult> UpdateAuction(Guid id, UpdateAuctionDto updateAuctionDto)
     {
         var auction = await _context.Auctions.Include(a => a.Item).FirstOrDefaultAsync(a => a.Id == id);
         if (auction is null) return NotFound();
+        if (auction.Seller != User.Identity.Name) return Forbid();
         auction.Item.Model = updateAuctionDto.Model ?? auction.Item.Model;
         auction.Item.Make = updateAuctionDto.Make ?? auction.Item.Make;
         auction.Item.Color = updateAuctionDto.Color ?? auction.Item.Color;
@@ -74,12 +78,14 @@ public class AuctionsController : ControllerBase
         return BadRequest();
     }
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<ActionResult> DeleteAuction(Guid id)
     {
         var auction = await _context.Auctions.Include(a => a.Item).FirstOrDefaultAsync(a =>
         a.Id == id);
         if (auction is null) return NotFound();
-        _context.Auctions.Remove(auction);
+        if (auction.Seller != User.Identity.Name) return Forbid();
+         _context.Auctions.Remove(auction);
         await _publishEndpoint.Publish(new AuctionDeleted { Id = id.ToString()});
         if (await _context.SaveChangesAsync() > 0) return Ok();
         return BadRequest();
