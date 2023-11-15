@@ -23,6 +23,10 @@ internal static class HostingExtensions
         builder.Services
             .AddIdentityServer(options =>
             {
+                if (builder.Environment.IsEnvironment("Docker"))
+                {
+                    options.IssuerUri = "identity-svc";
+                }
                 options.Events.RaiseErrorEvents = true;
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseFailureEvents = true;

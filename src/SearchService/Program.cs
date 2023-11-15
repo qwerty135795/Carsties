@@ -12,14 +12,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient<AuctionSvcHttpClient>().AddPolicyHandler(GetPolicy());
 builder.Services.AddControllers();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddMassTransit(c => {
+builder.Services.AddMassTransit(c =>
+{
     c.AddConsumersFromNamespaceContaining<AuctionCreatedConsumer>();
-    c.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("search",false));
-    c.UsingRabbitMq((context, cnf) => 
+    c.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter("search", false));
+    c.UsingRabbitMq((context, cnf) =>
     {
+        cnf.Host(builder.Configuration["RabbitMq:Host"], "/", host =>
+        {
+            host.Username(builder.Configuration.GetValue("RabbitMq:Username", "guest"));
+            host.Password(builder.Configuration.GetValue("RabbitMq:Password", "guest"));
+        });
         cnf.ReceiveEndpoint("search-auction-created", cnf =>
         {
-            cnf.UseMessageRetry(c => c.Interval(5,5));
+            cnf.UseMessageRetry(c => c.Interval(5, 5));
             cnf.ConfigureConsumer<AuctionCreatedConsumer>(context);
         });
         cnf.ConfigureEndpoints(context);
