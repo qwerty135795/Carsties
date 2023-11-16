@@ -14,6 +14,7 @@ builder.Services.AddDbContext<AuctionDbContext>(opt =>
 {
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddScoped<IAuctionRepository, AuctionRepository>();
 builder.Services.AddMassTransit(c => {
     c.AddEntityFrameworkOutbox<AuctionDbContext>(opt => 
     {
@@ -56,3 +57,5 @@ catch(Exception e)
     Console.WriteLine(e.Message);
 }
 app.Run();
+
+public partial class Program {}
