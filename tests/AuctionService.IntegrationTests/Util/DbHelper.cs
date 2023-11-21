@@ -68,7 +68,7 @@ public static class DbHelper
                     Color = "Black",
                     Mileage = 65125,
                     Year = 2023,
-                    ImageUrl = "https://cdn.pixabay.com/photo/2012/11/02/13/02/car-63930_960_720.jpg"
+                    ImageUrl = "https://www.topgear.com/sites/default/files/2022/07/13.jpg"
                 }
             }
         };

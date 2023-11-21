@@ -1,3 +1,4 @@
+using AuctionService;
 using AuctionService.Consumers;
 using AuctionService.Data;
 using MassTransit;
@@ -43,11 +44,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         opt.TokenValidationParameters.ValidateAudience = false;
         opt.TokenValidationParameters.NameClaimType = "username";
     });
+builder.Services.AddGrpc();
 var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGrpcService<GrpcAuctionService>();
 try 
 {
     DbInitializer.InitDb(app);
