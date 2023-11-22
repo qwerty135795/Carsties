@@ -10,8 +10,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     opt.RequireHttpsMetadata = false;
     opt.TokenValidationParameters.NameClaimType = "username";
 });
+builder.Services.AddCors(opt => 
+{
+    opt.AddPolicy("signalR", pol =>
+    {
+        pol.AllowAnyHeader().AllowAnyMethod()
+        .AllowCredentials().WithOrigins(builder.Configuration["ClientApp"]);
+    });
+});
 var app = builder.Build();
-
+app.UseCors();
 app.MapReverseProxy();
 app.UseAuthentication();
 app.UseAuthorization();
